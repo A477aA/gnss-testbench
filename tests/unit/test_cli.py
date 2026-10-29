@@ -17,9 +17,9 @@ def test_run_passes_on_open_sky(tmp_path):
     code = main(["run", OPEN_SKY, "--criteria", RTK, "-q",
                  "--markdown", str(md), "--json", str(js), "--junit", str(junit)])
     assert code == 0
-    assert "ПРОЙДЕНА" in md.read_text()
-    assert json.loads(js.read_text())["acceptance"]["passed"] is True
-    assert "<testsuite" in junit.read_text()
+    assert "ПРОЙДЕНА" in md.read_text(encoding="utf-8")
+    assert json.loads(js.read_text(encoding="utf-8"))["acceptance"]["passed"] is True
+    assert "<testsuite" in junit.read_text(encoding="utf-8")
 
 
 def test_run_fails_on_urban_canyon(capsys):
@@ -56,5 +56,24 @@ def test_usage_errors_return_2(argv, capsys):
 
 def test_bad_criteria_file_returns_2(tmp_path):
     bad = tmp_path / "bad.toml"
-    bad.write_text("[acceptance]\nttf_max_s = 1\n")
+    bad.write_text("[acceptance]\nttf_max_s = 1\n", encoding="utf-8")
     assert main(["run", OPEN_SKY, "--criteria", str(bad), "-q"]) == 2
+
+
+def test_package_imports_without_posix_tty(monkeypatch):
+    """В Windows нет модулей tty/termios — пакет и CLI всё равно должны загружаться."""
+    import importlib
+    import sys
+
+    monkeypatch.setitem(sys.modules, "tty", None)
+    monkeypatch.setitem(sys.modules, "termios", None)
+    for name in [m for m in sys.modules if m.startswith("gnss_testbench")]:
+        monkeypatch.delitem(sys.modules, name)
+    cli = importlib.import_module("gnss_testbench.cli")
+    assert cli.main(["run", OPEN_SKY, "--criteria", RTK, "-q"]) == 0
+
+
+def test_virtual_port_on_windows_gives_clear_error(monkeypatch, capsys):
+    monkeypatch.setattr("sys.platform", "win32")
+    assert main(["serve", OPEN_SKY]) == 2
+    assert "WSL" in capsys.readouterr().err

@@ -51,7 +51,21 @@ make test             # 240 тестов, около 25 с
 make acceptance       # 4 сценария с ожидаемыми вердиктами
 ```
 
-Виртуальный приёмник в «настоящем» порту:
+### Windows
+
+```powershell
+python -m venv .venv
+.venv\Scripts\activate
+pip install -e ".[dev]"
+pytest                                        # сквозные тесты на pty в Windows пропускаются
+gnss-testbench run scenarios\urban_canyon.toml --criteria criteria\rtk_static.toml
+gnss-testbench capture --port COM3 --duration 300 -o receiver.nmea   # реальный приёмник
+```
+
+Виртуальный порт (`serve`, сквозные тесты) работает на псевдотерминале, поэтому в Windows его
+нужно запускать через WSL. Всё остальное работает нативно.
+
+Виртуальный приёмник в «настоящем» порту (Linux, macOS, WSL):
 
 ```bash
 gnss-testbench serve scenarios/open_sky_rtk.toml

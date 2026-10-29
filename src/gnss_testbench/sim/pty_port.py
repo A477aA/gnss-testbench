@@ -9,9 +9,9 @@ slave-сторону (``/dev/pts/N``) через pyserial — ровно как 
 from __future__ import annotations
 
 import os
+import sys
 import threading
 import time
-import tty
 from types import TracebackType
 
 from .receiver import VirtualReceiver
@@ -41,6 +41,13 @@ class VirtualSerialPort:
         self.port = ""
 
     def __enter__(self) -> VirtualSerialPort:
+        if sys.platform == "win32":
+            raise RuntimeError(
+                "виртуальный порт работает на псевдотерминале — он есть только в Linux/macOS. "
+                "В Windows запускай через WSL или используй пару COM-портов com0com"
+            )
+        import tty  # только POSIX: импорт здесь, чтобы пакет грузился в Windows
+
         self._master, self._slave = os.openpty()
         tty.setraw(self._slave)                 # без эха и преобразования CRLF
         self.port = os.ttyname(self._slave)

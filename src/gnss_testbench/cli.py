@@ -146,11 +146,21 @@ def build_parser() -> argparse.ArgumentParser:
     return ap
 
 
+def _utf8_console() -> None:
+    """Консоль Windows по умолчанию не UTF-8: кириллица и ✅ иначе роняют вывод."""
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is not None:
+            with contextlib.suppress(ValueError, OSError):
+                reconfigure(encoding="utf-8", errors="replace")
+
+
 def main(argv: list[str] | None = None) -> int:
+    _utf8_console()
     args = build_parser().parse_args(argv)
     try:
         return int(args.func(args))
-    except (ScenarioError, CriteriaError, ValueError, OSError) as exc:
+    except (ScenarioError, CriteriaError, ValueError, OSError, RuntimeError) as exc:
         print(f"Ошибка: {exc}", file=sys.stderr)
         return 2
 

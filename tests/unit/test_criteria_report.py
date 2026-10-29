@@ -68,7 +68,7 @@ def test_repository_criteria_files_are_valid(path):
 
 def test_criteria_file_without_section(tmp_path):
     p = tmp_path / "c.toml"
-    p.write_text("ttff_max_s = 1\n")
+    p.write_text("ttff_max_s = 1\n", encoding="utf-8")
     with pytest.raises(CriteriaError, match=r"\[acceptance\]"):
         load_criteria(p)
 
