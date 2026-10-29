@@ -1,0 +1,7 @@
+# Устойчивость приёма через UART: допускаем потери строк, но не данных навигации.
+[acceptance]
+bad_sentence_ratio_max = 0.02
+availability_min = 0.9
+rtk_fixed_ratio_min = 0.95
+position_jumps_max = 0
+cep95_max_m = 0.03

@@ -1,0 +1,29 @@
+# Плохой кабель / помехи на UART: мусор, искажённые байты, оборванные строки.
+# Решение навигации при этом нормальное. Ожидание: приёмка по устойчивости
+# потока пройдена — декодер должен отбросить мусор и не потерять данные.
+name = "Помехи на последовательном порту"
+rate_hz = 10
+seed = 11
+
+[reference]
+lat = 55.694800
+lon = 37.361250
+alt_m = 185.3
+
+[[phase]]
+duration_s = 5
+quality = "NO_FIX"
+sats = 4
+
+[[phase]]
+duration_s = 115
+quality = "RTK_FIXED"
+sats = 18
+hdop = 0.7
+sigma_m = 0.008
+
+[faults]
+garbage_probability = 0.05
+corrupt_probability = 0.002
+corrupt_checksum_at_s = [30.0, 60.0]
+truncate_at_s = [45.0, 90.5]

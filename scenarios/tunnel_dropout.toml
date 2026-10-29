@@ -1,0 +1,41 @@
+# Проезд тоннеля: приёмник замолкает на 12 с, затем заново набирает решение.
+# Ожидание: приёмка НЕ пройдена по разрыву потока и потере фиксации.
+name = "Тоннель: пропадание данных и восстановление"
+rate_hz = 5
+seed = 3
+
+[reference]
+lat = 55.694800
+lon = 37.361250
+alt_m = 185.3
+
+[[phase]]
+duration_s = 60
+quality = "RTK_FIXED"
+sats = 18
+hdop = 0.7
+sigma_m = 0.008
+
+[[phase]]              # после тоннеля: автономное решение
+duration_s = 8
+quality = "GPS"
+sats = 9
+hdop = 1.6
+sigma_m = 1.5
+
+[[phase]]
+duration_s = 10
+quality = "RTK_FLOAT"
+sats = 15
+hdop = 0.9
+sigma_m = 0.2
+
+[[phase]]
+duration_s = 60
+quality = "RTK_FIXED"
+sats = 18
+hdop = 0.7
+sigma_m = 0.008
+
+[faults]
+dropouts = [{ start_s = 48, duration_s = 12 }]

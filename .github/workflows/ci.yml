@@ -1,0 +1,63 @@
+# Зеркало .gitlab-ci.yml для GitHub Actions.
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12", cache: pip }
+      - run: pip install -q -e ".[dev]"
+      - run: ruff check .
+      - run: mypy
+      - run: shellcheck scripts/*.sh
+
+  test:
+    needs: lint
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "${{ matrix.python }}", cache: pip }
+      - run: pip install -q -e ".[dev]"
+      - run: pytest --junitxml=report.xml --cov --cov-report=term
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: junit-${{ matrix.python }}
+          path: report.xml
+
+  acceptance:
+    needs: test
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { scenario: open_sky_rtk,   criteria: rtk_static,        expect: pass }
+          - { scenario: noisy_serial,   criteria: serial_robustness, expect: pass }
+          - { scenario: urban_canyon,   criteria: rtk_static,        expect: fail }
+          - { scenario: tunnel_dropout, criteria: rtk_static,        expect: fail }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12", cache: pip }
+      - run: pip install -q -e .
+      - run: bash scripts/acceptance.sh scenarios/${{ matrix.scenario }}.toml criteria/${{ matrix.criteria }}.toml ${{ matrix.expect }} reports
+      - name: Отчёт в summary
+        if: always()
+        run: cat reports/${{ matrix.scenario }}.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: acceptance-${{ matrix.scenario }}
+          path: reports/

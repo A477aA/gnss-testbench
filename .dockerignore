@@ -1,0 +1,6 @@
+.git
+.venv
+reports
+logs
+**/__pycache__
+.hypothesis

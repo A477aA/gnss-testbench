@@ -1,0 +1,11 @@
+# Приёмка RTK в статике на открытом небе.
+[acceptance]
+ttff_max_s = 60
+time_to_rtk_fixed_max_s = 120
+rtk_fixed_ratio_min = 0.95
+fix_downgrades_max = 0
+position_jumps_max = 0
+cep95_max_m = 0.03
+max_gap_max_s = 2
+pdop_median_max = 2.5
+bad_sentence_ratio_max = 0.001

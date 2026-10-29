@@ -1,0 +1,55 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gnss-testbench"
+version = "0.2.0"
+description = "Стенд тестирования ПО и прошивок GNSS-приёмников: NMEA, эмулятор, метрики RTK, критерии приёмки"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [{ name = "Andrei Derkachev" }]
+dependencies = ["pyserial>=3.5"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "pytest-cov>=5", "hypothesis>=6.100", "ruff>=0.5", "mypy>=1.10"]
+
+[project.scripts]
+gnss-testbench = "gnss_testbench.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-ra --strict-markers"
+markers = [
+    "integration: сквозные тесты через виртуальный последовательный порт",
+    "hardware: тесты на реальном приёмнике (нужен --gnss-port)",
+]
+
+[tool.coverage.run]
+source = ["gnss_testbench"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "PT", "RUF"]
+ignore = ["RUF001", "RUF002", "RUF003"]   # кириллица в строках и комментариях — норма
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+files = ["src"]
+
+[[tool.mypy.overrides]]
+module = ["serial", "serial.*"]
+ignore_missing_imports = true
